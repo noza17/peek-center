@@ -1,101 +1,142 @@
-import Image from "next/image";
+"use client";  // 最初に追加
+
+import { useState, useEffect, useCallback } from 'react';
+import 'tailwindcss/tailwind.css';
+
+const apiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
+const apiEndpoint = 'https://script.google.com/macros/s/AKfycbyQ4UZKZZi9oXH73CVCDxHgtQ54ZadvyuKAbZqw6sbA8PkOGUDZ0Q_pBKoGFdTsoKmC/exec';  // Google Apps ScriptのURL
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [transcript, setTranscript] = useState('');
+  const [error, setError] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [title, setTitle] = useState('');
+  const [keywords, setKeywords] = useState('');
+  const [summary, setSummary] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  // doGetで取得したテキストをtranscriptに代入する関数
+
+  const fetchTranscript = useCallback(async () => {
+    try {
+      const response = await fetch(apiEndpoint);
+      if (response.ok) {
+        const data = await response.text();  // テキストとして取得
+        console.log("取得した応答:", data);  // 応答全体を出力
+        setTranscript(data);  // transcriptにドキュメント内容を代入
+      } else {
+        console.error("APIの呼び出しに失敗しました:", response.status);
+        setError('APIの呼び出しに失敗しました。再試行してください。');
+      }
+    } catch (error) {
+      console.error("API呼び出し中にエラーが発生しました:", error);
+      setError('エラーが発生しました。ネットワーク接続を確認してください。');
+    }
+  }, []);   
+
+  useEffect(() => {
+    fetchTranscript(); // 初回のデータ取得
+    const interval = setInterval(fetchTranscript, 10000); // 10秒ごとに取得
+    return () => clearInterval(interval); // コンポーネントがアンマウントされたときにインターバルをクリア
+  }, [fetchTranscript]);
+
+  // transcriptが更新されるたびに生成処理を実行
+  useEffect(() => {
+    if (transcript.trim()) {
+      handleGenerateClick();
+    }
+  }, [transcript]);
+
+  // 生成処理
+  const handleGenerateClick = useCallback(async () => {
+    if (isGenerating || !transcript.trim()) {
+      console.log("生成処理をスキップしました。isGenerating:", isGenerating, "transcript:", transcript);
+      return;
+    }
+    setIsGenerating(true);
+
+    try {
+      console.log("生成処理を開始します:", transcript);
+
+      // タイトル生成
+      const titleResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [
+            { role: 'system', content: 'ユーザから、会話の文字起こしが提供されます。この会話にタイトルをつけてください。タイトルは20文字程度で、ぱっと見たときに目を引く内容にしてください。' },
+            { role: 'user', content: `「${transcript}」` },
+          ],
+        }),
+      });
+      const titleData = await titleResponse.json();
+      const generatedTitle = titleData.choices[0].message.content;
+
+      // キーワード抽出
+      const keywordResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [
+            { role: 'system', content: 'あなたは、ツッコミ芸人の粗品です。ユーザから、会話の文字起こしが提供されます。この会話に対して、200字程度で笑えるツッコミを入れてください。' },
+            { role: 'user', content: `${transcript}` },
+          ],
+        }),
+      });
+
+      const keywordData = await keywordResponse.json();
+      const extractedKeywords = keywordData.choices[0].message.content;
+
+      setTitle(generatedTitle);
+      setKeywords(extractedKeywords);
+
+      // 画像生成
+      const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'dall-e-3',
+          prompt: `${extractedKeywords} からインスピレーションを受けた画像を生成してください。`,
+          size: '1024x1024',
+        }),
+      });
+
+      const imageData = await imageResponse.json();
+      if (imageData?.data?.[0]?.url) {
+        setImageUrl(imageData.data[0].url);
+      }
+
+      setSummary(`${extractedKeywords}`);
+      console.log("生成処理が完了しました。");
+    } catch (error) {
+      console.error("エラーが発生しました:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [transcript, isGenerating]);
+  console.log("生成処理前のtranscript:", transcript);
+
+  return (
+    <div className="w-screen h-screen bg-white grid grid-cols-2">
+      <div className=''>
+        {imageUrl && <img src={imageUrl} alt="Generated Character" className="w-full h-full" />}
+      </div>
+      <div className='flex flex-col justify-center p-8'>
+        <h2 className='text-4xl font-bold mb-4'>{title}</h2>  
+        <p className='text-xl'>{summary}</p>  
+        {error && <p className="text-red-500 mt-4">{error}</p>}
+      </div>
     </div>
   );
 }
