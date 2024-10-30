@@ -128,15 +128,14 @@ export default function Home() {
   console.log("生成処理前のtranscript:", transcript);
 
   return (
-    <div className="w-screen h-screen bg-white grid grid-cols-2">
-      <div className=''>
-        {imageUrl && <img src={imageUrl} alt="Generated Character" className="w-full h-full" />}
-      </div>
-      <div className='flex flex-col justify-center p-8'>
-        <h2 className='text-4xl font-bold mb-4'>{title}</h2>  
-        <p className='text-xl'>{summary}</p>  
-        {error && <p className="text-red-500 mt-4">{error}</p>}
-      </div>
+  <div className="w-screen h-screen bg-white grid grid-cols-2">
+    <div className=''>
+      {imageUrl && <img src={imageUrl} alt="Generated Character" className="w-full h-full" />}
     </div>
+    <div className='flex flex-col justify-center p-8'>
+      <h2 className='text-4xl font-bold mb-4 text-black'>{title}</h2>  
+      <p className='text-xl text-black'>{summary}</p>  
+    </div>
+  </div>
   );
 }
