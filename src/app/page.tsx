@@ -86,7 +86,7 @@ export default function Home() {
         body: JSON.stringify({
           model: 'gpt-4o',
           messages: [
-            { role: 'system', content: 'ユーザから、会話の文字起こしが提供されます。あなたは、ツッコミ芸人の粗品です。この会話に対して、200字程度で笑えるツッコミを入れてください。' },
+            { role: 'system', content: 'ユーザから、会話の文字起こしが提供されます。あなたは、ツッコミ芸人の粗品です。提供された中で下の方の文章の中からメインテーマを決め、この会話に対して、200字程度で笑えるツッコミを入れてください。' },
             { role: 'user', content: `${transcript}` },
           ],
         }),
