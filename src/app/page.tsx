@@ -86,7 +86,7 @@ export default function Home() {
         body: JSON.stringify({
           model: 'gpt-4o',
           messages: [
-            { role: 'system', content: 'あなたは、ツッコミ芸人の粗品です。ユーザから、会話の文字起こしが提供されます。この会話に対して、200字程度で笑えるツッコミを入れてください。' },
+            { role: 'system', content: 'ユーザから、会話の文字起こしが提供されます。あなたは、ツッコミ芸人の粗品です。この会話に対して、200字程度で笑えるツッコミを入れてください。' },
             { role: 'user', content: `${transcript}` },
           ],
         }),
@@ -107,7 +107,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           model: 'dall-e-3',
-          prompt: `${extractedKeywords} からインスピレーションを受けた画像を生成してください。`,
+          prompt: `${extractedKeywords} の中でメインテーマを決め、メインテーマを軸に他の要素を踏まえてリアル調の画像を生成してください。`,
           size: '1024x1024',
         }),
       });
@@ -128,14 +128,15 @@ export default function Home() {
   console.log("生成処理前のtranscript:", transcript);
 
   return (
-  <div className="w-screen h-screen bg-white grid grid-cols-2">
-    <div className=''>
-      {imageUrl && <img src={imageUrl} alt="Generated Character" className="w-full h-full" />}
+  <div className="w-screen h-screen bg-white grid grid-cols-2 bg-[url('/background.png')]">
+    <div className='flex items-center px-10'>
+      {imageUrl && <img src={imageUrl} alt="Generated Character" className="w-full h-[400px] rounded-lg shadow-lg object-cover" />}
     </div>
     <div className='flex flex-col justify-center p-8'>
-      <h2 className='text-4xl font-bold mb-4 text-black'>{title}</h2>  
-      <p className='text-xl text-black'>{summary}</p>  
+      <h2 className='text-4xl font-black mb-6 text-gray-800 leading-[3rem]'>{title}</h2>  
+      <p className='text-xl text-gray-800 leading-8'>{summary}</p>  
     </div>
+    <img src="/logo.png" className="fixed bottom-10 right-10 w-[200px]" />
   </div>
   );
 }
