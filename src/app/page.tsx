@@ -129,6 +129,7 @@ export default function Home() {
 
   return (
   <div className="w-screen h-screen bg-white grid grid-cols-2 bg-[url('/background.png')]">
+  <img src="/peek-logo.png" className="fixed top-10 left-10 w-[200px]" />
     <div className='flex items-center px-10'>
       {imageUrl && <img src={imageUrl} alt="Generated Character" className="w-full h-[400px] rounded-lg shadow-lg object-cover" />}
     </div>
