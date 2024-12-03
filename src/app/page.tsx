@@ -68,7 +68,7 @@ export default function Home() {
         body: JSON.stringify({
           model: 'gpt-4',
           messages: [
-            { role: 'system', content: 'ユーザから、会話の文字起こしが提供されます。この会話にタイトルをつけてください。タイトルは20文字程度で、ぱっと見たときに目を引く内容にしてください。' },
+            { role: 'system', content: 'ユーザから、会議の文字起こしが提供されます。この会議のタイトルをつけてください。タイトルは20文字程度で、議論の内容が一言で伝わるものにしてください。' },
             { role: 'user', content: `「${transcript}」` },
           ],
         }),
@@ -86,7 +86,7 @@ export default function Home() {
         body: JSON.stringify({
           model: 'gpt-4o',
           messages: [
-            { role: 'system', content: 'ユーザから、会話の文字起こしが提供されます。あなたは、ツッコミ芸人の粗品です。提供された中で下の方の文章の中からメインテーマを決め、この会話に対して、200字程度で笑えるツッコミを入れてください。' },
+            { role: 'system', content: 'ユーザから、会議の文字起こしが提供されます。あなたは、あなたは会議の書記です。ここまでの会議の要約を200文字程度で記述してください。' },
             { role: 'user', content: `${transcript}` },
           ],
         }),
@@ -107,7 +107,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           model: 'dall-e-3',
-          prompt: `${extractedKeywords} の中でメインテーマを決め、メインテーマを軸に他の要素を踏まえてリアル調の画像を生成してください。`,
+          prompt: `あなたは会議のグラフィックレコーダーです。${extractedKeywords} の内容を表現する画像を生成してください。`,
           size: '1024x1024',
         }),
       });
